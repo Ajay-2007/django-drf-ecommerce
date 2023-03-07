@@ -32,6 +32,17 @@ class Product(models.Model):
     # the product not necessary depend on the category so on_delete, would be SET_NULL
     category = TreeForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
 
+    is_active = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.name
+
+
+
+class ProductLine(models.Model):
+    price = models.DecimalField()
+    sku = models.CharField(max_length=100)
+    stock_qty = models.IntegerField()
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=False)
