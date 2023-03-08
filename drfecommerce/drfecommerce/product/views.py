@@ -105,13 +105,13 @@ class ProductViewSet(viewsets.ViewSet):
     @action(
         methods=["get"],
         detail=False, # it indicates if the current action is configured for the list or a detail view False means for list
-        url_path=f"category/(?P<category>\w+)/all",
+        url_path=f"category/(?P<slug>[\w-]+)",
         # url_name="all",
     )
-    def list_product_by_category(self, request, category=None):
+    def list_product_by_category_slug(self, request, slug=None):
         """
         An endpoint to return products by category
         """
         # query the category name for selecting products
-        serializer = ProductSerializer(self.queryset.filter(category__name=category), many=True)
+        serializer = ProductSerializer(self.queryset.filter(category__slug=slug), many=True)
         return Response(serializer.data)

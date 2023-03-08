@@ -21,6 +21,7 @@ class ActiveQueryset(models.QuerySet):
 
 class Category(MPTTModel):
     name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=255)
     is_active = models.BooleanField(default=False)
     # if we do wanna delete anything, we wanna delete all the child category first, before we delete any parent category
     parent = TreeForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
