@@ -81,14 +81,17 @@ class ProductLine(models.Model):
     # ordering number will only be related to a product
     objects = ActiveQueryset.as_manager()
 
-    def clean_fields(self, exclude=None):
+    def clean(self):
         # this is gonna checked for every line
-        super().clean_fields(exclude=exclude)
         qs = ProductLine.objects.filter(product=self.product)
         for obj in qs:
             if self.id != obj.id and self.order == obj.order: # means there is duplicate
                 raise ValidationError("Duplicate value.")
 
+    def save(self, *args, **kwargs):
+        # on save now we are running full_clean, meaning clean method
+        self.full_clean()
+        return super(ProductLine, self).save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.order)
+        return str(self.sku)
