@@ -23,6 +23,7 @@ class TestBrandModel:
         # Act
         x = brand_factory(name="test_brand")
 
+
         # Assert
         assert x.__str__() == "test_brand"
 
