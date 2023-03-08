@@ -50,7 +50,10 @@ class ProductViewSet(viewsets.ViewSet):
     A Simple Viewset for viewing all products
     """
 
-    queryset = Product.objects.all()
+    # queryset = Product.objects.all()
+    # queryset = Product.isactive.all()
+    # queryset = Product.objects.isactive() # isactive is now a method which can be accessed through the manager
+    queryset = Product.objects.all().isactive() # isactive is now a method which can be accessed through the queryset manager
 
 
 
@@ -83,8 +86,8 @@ class ProductViewSet(viewsets.ViewSet):
         # print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
 
         data = Response(serializer.data)
-        q = list(connection.queries)
-        print(len(q))
+        # q = list(connection.queries)
+        # print(len(q))
         # for qs in q:
         #     sqlformatted = format(str(qs["sql"]), reindent=True)
         #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
