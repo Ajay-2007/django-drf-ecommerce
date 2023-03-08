@@ -1,6 +1,13 @@
+from django.db import connection # to inspect queryset
 from django.shortcuts import render
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import SqliteConsoleLexer, SqlLexer
+from sqlparse import format
+
 from drf_spectacular.utils import extend_schema
 
 
@@ -8,7 +15,7 @@ from drf_spectacular.utils import extend_schema
 from .models import Category, Brand, Product
 from .serializers import CategorySerializer, BrandSerializer, ProductSerializer
 
-class CategoryViewSet(viewsets.ViewSet):
+class CategoryViewSet(viewsets.ModelViewSet):
     """
 
     A Simple Viewset for viewing all categories
@@ -43,7 +50,51 @@ class ProductViewSet(viewsets.ViewSet):
     A Simple Viewset for viewing all products
     """
 
-    queryset = Product.objects.all()
+    # queryset = Product.objects.all()
+    # queryset = Product.isactive.all()
+    # queryset = Product.objects.isactive() # isactive is now a method which can be accessed through the manager
+    queryset = Product.objects.all().isactive() # isactive is now a method which can be accessed through the queryset manager
+
+
+
+    lookup_field = 'slug'
+
+    def retrieve(self, request, slug=None): # this is the function we are using when we return individual products
+        # serializer = ProductSerializer(self.queryset.filter(slug=slug), many=True) # setup the query and run our filter
+        serializer = ProductSerializer(
+            self.queryset.filter(slug=slug).select_related("category", "brand"), many=True
+        ) # setup the query and run our filter, performing left outer join
+        # we just trying to find the data related to our product in the category table
+
+        # x = Response(serializer.data)
+
+        # x = self.queryset.filter(slug=slug)
+        # print(connection.queries)
+        # sqlformatted = format(str(x.query), reindent=True)
+        """
+            SELECT "product_product"."id",
+                "product_product"."name",
+                "product_product"."slug",
+                "product_product"."description",
+                "product_product"."is_digital",
+                "product_product"."brand_id",
+                "product_product"."category_id",
+                "product_product"."is_active"
+            FROM "product_product"
+            WHERE "product_product"."slug" = p3
+        """
+        # print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+
+        data = Response(serializer.data)
+        # q = list(connection.queries)
+        # print(len(q))
+        # for qs in q:
+        #     sqlformatted = format(str(qs["sql"]), reindent=True)
+        #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+
+
+        return data
+
 
     @extend_schema(responses=ProductSerializer)
     def list(self, request):
@@ -51,3 +102,16 @@ class ProductViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
 
+    @action(
+        methods=["get"],
+        detail=False, # it indicates if the current action is configured for the list or a detail view False means for list
+        url_path=f"category/(?P<slug>[\w-]+)",
+        # url_name="all",
+    )
+    def list_product_by_category_slug(self, request, slug=None):
+        """
+        An endpoint to return products by category
+        """
+        # query the category name for selecting products
+        serializer = ProductSerializer(self.queryset.filter(category__slug=slug), many=True)
+        return Response(serializer.data)
