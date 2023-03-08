@@ -1,5 +1,7 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from .fields import OrderField
 
 
 # # creating a custom manager
@@ -75,4 +77,18 @@ class ProductLine(models.Model):
         related_name="product_line" # we can specify the name that can make things little bit readable, we will use this data to reference this data to build the reverse foreign key relationship
     )
     is_active = models.BooleanField(default=False)
+    order = OrderField(unique_for_field="product", blank=True) # we want to run our query on the product field only
+    # ordering number will only be related to a product
     objects = ActiveQueryset.as_manager()
+
+    def clean_fields(self, exclude=None):
+        # this is gonna checked for every line
+        super().clean_fields(exclude=exclude)
+        qs = ProductLine.objects.filter(product=self.product)
+        for obj in qs:
+            if self.id != obj.id and self.order == obj.order: # means there is duplicate
+                raise ValidationError("Duplicate value.")
+
+
+    def __str__(self):
+        return str(self.order)
