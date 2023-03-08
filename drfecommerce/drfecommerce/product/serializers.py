@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Brand, Category, Product
+from .models import Brand, Category, Product, ProductLine
 
 
 # all the data will be serialized and returned to the frontend
@@ -23,4 +23,12 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
+        fields = "__all__" # what data we return to the client
+
+
+class ProductLineSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()
+    
+    class Meta:
+        model = ProductLine
         fields = "__all__" # what data we return to the client
