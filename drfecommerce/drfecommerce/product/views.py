@@ -1,7 +1,13 @@
+from django.db import connection # to inspect queryset
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import SqliteConsoleLexer, SqlLexer
+from sqlparse import format
+
 from drf_spectacular.utils import extend_schema
 
 
@@ -45,12 +51,46 @@ class ProductViewSet(viewsets.ViewSet):
     """
 
     queryset = Product.objects.all()
+
+
+
     lookup_field = 'slug'
 
-    def retrieve(self, request, slug=None):
-        serializer = ProductSerializer(self.queryset.filter(slug=slug), many=True)
+    def retrieve(self, request, slug=None): # this is the function we are using when we return individual products
+        # serializer = ProductSerializer(self.queryset.filter(slug=slug), many=True) # setup the query and run our filter
+        serializer = ProductSerializer(
+            self.queryset.filter(slug=slug).select_related("category", "brand"), many=True
+        ) # setup the query and run our filter, performing left outer join
+        # we just trying to find the data related to our product in the category table
 
-        return Response(serializer.data)
+        # x = Response(serializer.data)
+
+        # x = self.queryset.filter(slug=slug)
+        # print(connection.queries)
+        # sqlformatted = format(str(x.query), reindent=True)
+        """
+            SELECT "product_product"."id",
+                "product_product"."name",
+                "product_product"."slug",
+                "product_product"."description",
+                "product_product"."is_digital",
+                "product_product"."brand_id",
+                "product_product"."category_id",
+                "product_product"."is_active"
+            FROM "product_product"
+            WHERE "product_product"."slug" = p3
+        """
+        # print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+
+        data = Response(serializer.data)
+        q = list(connection.queries)
+        print(len(q))
+        # for qs in q:
+        #     sqlformatted = format(str(qs["sql"]), reindent=True)
+        #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+
+
+        return data
 
 
     @extend_schema(responses=ProductSerializer)
