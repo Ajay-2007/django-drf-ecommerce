@@ -10,6 +10,8 @@ from sqlparse import format
 
 from drf_spectacular.utils import extend_schema
 
+from django.db.models import Prefetch
+
 
 
 from .models import Category, Brand, Product
@@ -62,9 +64,16 @@ class ProductViewSet(viewsets.ViewSet):
     def retrieve(self, request, slug=None): # this is the function we are using when we return individual products
         # serializer = ProductSerializer(self.queryset.filter(slug=slug), many=True) # setup the query and run our filter
         serializer = ProductSerializer(
-            self.queryset.filter(slug=slug).select_related("category", "brand"), many=True
+            # self.queryset.filter(slug=slug).select_related("category", "brand"), many=True
+            # Product.objects.filter(slug=slug).select_related("category", "brand"), many=True,
+            Product.objects.filter(slug=slug)
+            .select_related("category", "brand")
+            # .prefetch_related(Prefetch("product_line"))
+            .prefetch_related(Prefetch("product_line__product_image")) # to do reverse foreign key look up we have to do double underscore, it will fetch all of the product_image at once
+            , many=True,
         ) # setup the query and run our filter, performing left outer join
         # we just trying to find the data related to our product in the category table
+        # select_related performs sql join behind the scene
 
         # x = Response(serializer.data)
 
@@ -86,11 +95,11 @@ class ProductViewSet(viewsets.ViewSet):
         # print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
 
         data = Response(serializer.data)
-        # q = list(connection.queries)
-        # print(len(q))
-        # for qs in q:
-        #     sqlformatted = format(str(qs["sql"]), reindent=True)
-        #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+        q = list(connection.queries)
+        print(len(q))
+        for qs in q:
+            sqlformatted = format(str(qs["sql"]), reindent=True)
+            print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
 
 
         return data

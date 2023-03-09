@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Brand, Category, Product, ProductLine
+from .models import Brand, Category, Product, ProductImage, ProductLine
 
 
 # all the data will be serialized and returned to the frontend
@@ -21,14 +21,29 @@ class BrandSerializer(serializers.ModelSerializer):
         exclude = ('id', ) # we can just exclude particular field
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        exclude = ("id", "productline")
+
+
+
+
 # move it front of the ProductSerializer in order to use it in ProductSerializer
 class ProductLineSerializer(serializers.ModelSerializer):
     # product = ProductSerializer()
-
+    product_image = ProductImageSerializer(many=True) # multiple images
     class Meta:
         model = ProductLine
         # fields = "__all__" # what data we return to the client
-        exclude = ('id', "is_active", "product") # we can just exclude particular field
+        # exclude = ('id', "is_active", "product") # we can just exclude particular field
+        fields = (
+            "price",
+            "sku",
+            "stock_qty",
+            "order",
+            "product_image",
+        )
 
 
 class ProductSerializer(serializers.ModelSerializer):
