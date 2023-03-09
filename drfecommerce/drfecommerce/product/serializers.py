@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Brand, Category, Product, ProductImage, ProductLine
+from .models import Brand, Category, Product, ProductImage, ProductLine, Attribute, AttributeValue
 
 
 # all the data will be serialized and returned to the frontend
@@ -27,12 +27,26 @@ class ProductImageSerializer(serializers.ModelSerializer):
         exclude = ("id", "productline")
 
 
+class AttributeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attribute
+        fields = ("name", )
 
+
+class AttributeValueSerializer(serializers.ModelSerializer):
+    attribute = AttributeSerializer(many=False)
+
+    class Meta:
+        model = AttributeValue
+        fields = ("attribute", "attribute_value", )
 
 # move it front of the ProductSerializer in order to use it in ProductSerializer
 class ProductLineSerializer(serializers.ModelSerializer):
     # product = ProductSerializer()
     product_image = ProductImageSerializer(many=True) # multiple images
+    attribute_value = AttributeValueSerializer(many=True) # we have many attributes return
+
+
     class Meta:
         model = ProductLine
         # fields = "__all__" # what data we return to the client
@@ -43,6 +57,7 @@ class ProductLineSerializer(serializers.ModelSerializer):
             "stock_qty",
             "order",
             "product_image",
+            "attribute_value",
         )
 
 
