@@ -71,6 +71,8 @@ class Attribute(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
 
+    def __str__(self):
+        return self.name
 
 class AttributeValue(models.Model):
     attribute_value = models.CharField(max_length=100)
@@ -79,6 +81,11 @@ class AttributeValue(models.Model):
         on_delete=models.CASCADE,
         related_name="attribute_value"
     )
+
+    def __str__(self):
+        return f"{self.attribute.name}-{self.attribute_value}"
+
+
 
 class ProductLineAttributeValue(models.Model):
     attribute_value = models.ForeignKey(
@@ -111,7 +118,11 @@ class ProductLine(models.Model):
     order = OrderField(unique_for_field="product", blank=True) # we want to run our query on the product field only
     # ordering number will only be related to a product
 
-    attribute_value = models.ManyToManyField(AttributeValue, through="ProductLineAttributeValue")
+    attribute_value = models.ManyToManyField(
+        AttributeValue,
+        through="ProductLineAttributeValue",
+        related_name="product_line_attribute_value",
+    )
     objects = ActiveQueryset.as_manager()
 
     def clean(self):
