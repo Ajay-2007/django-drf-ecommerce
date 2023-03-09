@@ -62,7 +62,8 @@ class ProductViewSet(viewsets.ViewSet):
     def retrieve(self, request, slug=None): # this is the function we are using when we return individual products
         # serializer = ProductSerializer(self.queryset.filter(slug=slug), many=True) # setup the query and run our filter
         serializer = ProductSerializer(
-            self.queryset.filter(slug=slug).select_related("category", "brand"), many=True
+            # self.queryset.filter(slug=slug).select_related("category", "brand"), many=True
+            Product.objects.filter(slug=slug).select_related("category", "brand"), many=True,
         ) # setup the query and run our filter, performing left outer join
         # we just trying to find the data related to our product in the category table
 

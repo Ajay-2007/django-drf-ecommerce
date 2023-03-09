@@ -105,6 +105,7 @@ class ProductImage(models.Model):
     productline = models.ForeignKey(
         ProductLine, on_delete=models.CASCADE, related_name="product_image"
     )
+    # related_name django can use it to built that reverse foreign key relationship in our serializer
     order = OrderField(unique_for_field="productline", blank=True) # we want to run our query on the product field only
 
 
