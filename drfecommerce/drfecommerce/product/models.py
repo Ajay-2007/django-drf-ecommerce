@@ -67,6 +67,36 @@ class Product(models.Model):
         return self.name
 
 
+class Attribute(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+
+class AttributeValue(models.Model):
+    attribute_value = models.CharField(max_length=100)
+    attribute = models.ForeignKey(
+        Attribute,
+        on_delete=models.CASCADE,
+        related_name="attribute_value"
+    )
+
+class ProductLineAttributeValue(models.Model):
+    attribute_value = models.ForeignKey(
+        AttributeValue,
+        on_delete=models.CASCADE,
+        related_name="product_attribute_value_av" # we don't want to have same related name twice
+    )
+    product_line = models.ForeignKey(
+        'ProductLine', # we can reference it before the the class definition
+        on_delete=models.CASCADE,
+        related_name="product_attribute_value_pl"
+    )
+
+
+    class Meta:
+        unique_together = ("attribute_value", "product_line", )
+
+
 
 class ProductLine(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=5)
@@ -80,6 +110,8 @@ class ProductLine(models.Model):
     is_active = models.BooleanField(default=False)
     order = OrderField(unique_for_field="product", blank=True) # we want to run our query on the product field only
     # ordering number will only be related to a product
+
+    attribute_value = models.ManyToManyField(AttributeValue, through="ProductLineAttributeValue")
     objects = ActiveQueryset.as_manager()
 
     def clean(self):
@@ -96,6 +128,7 @@ class ProductLine(models.Model):
 
     def __str__(self):
         return str(self.sku)
+
 
 
 class ProductImage(models.Model):
