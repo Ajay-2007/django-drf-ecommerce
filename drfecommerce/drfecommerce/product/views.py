@@ -95,11 +95,11 @@ class ProductViewSet(viewsets.ViewSet):
         # print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
 
         data = Response(serializer.data)
-        q = list(connection.queries)
-        print(len(q))
-        for qs in q:
-            sqlformatted = format(str(qs["sql"]), reindent=True)
-            print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+        # q = list(connection.queries)
+        # print(len(q))
+        # for qs in q:
+        #     sqlformatted = format(str(qs["sql"]), reindent=True)
+        #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
 
 
         return data
