@@ -56,7 +56,7 @@ class Product(models.Model):
     category = TreeForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
 
     is_active = models.BooleanField(default=False)
-
+    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
     # objects = models.Manager() # return all product
     # isactive = ActiveManager() # only return is_active=True product
 
@@ -122,7 +122,7 @@ class ProductLineAttributeValue(models.Model):
     def save(self, *args, **kwargs):
         # on save now we are running full_clean, meaning clean method
         self.full_clean()
-        return super(ProductLine, self).save(*args, **kwargs)
+        return super(ProductLineAttributeValue, self).save(*args, **kwargs)
 
 
 class ProductLine(models.Model):
@@ -143,7 +143,7 @@ class ProductLine(models.Model):
         through="ProductLineAttributeValue",
         related_name="product_line_attribute_value",
     )
-    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
+
     objects = ActiveQueryset.as_manager()
 
     def clean(self):
