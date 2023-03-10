@@ -15,17 +15,17 @@ from .fields import OrderField
 #         return self.get_queryset().filter(is_active=True)
 
 
-class ActiveQueryset(models.QuerySet):
-    def isactive(self):
+class IsIsActiveQueryset(models.QuerySet):
+    def is_active(self):
         return self.filter(is_active=True)
 
 class Category(MPTTModel):
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=255)
+    name = models.CharField(max_length=235, unique=True)
+    slug = models.SlugField(max_length=255, unique=True)
     is_active = models.BooleanField(default=False)
     # if we do wanna delete anything, we wanna delete all the child category first, before we delete any parent category
     parent = TreeForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
-    objects = ActiveQueryset.as_manager()
+    objects = IsActiveQueryset.as_manager()
 
     class MPTTMeta:
         order_insertion_by = ["name"]
@@ -39,7 +39,7 @@ class Brand(models.Model):
     # brand needs to be unique
     name = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=False)
-    objects = ActiveQueryset.as_manager()
+    objects = IsActiveQueryset.as_manager()
 
     def __str__(self):
         return self.name
@@ -61,7 +61,7 @@ class Product(models.Model):
     # isactive = ActiveManager() # only return is_active=True product
 
     # objects = ActiveManager()
-    objects = ActiveQueryset.as_manager()
+    objects = IsActiveQueryset.as_manager()
 
     def __str__(self):
         return self.name
@@ -144,7 +144,7 @@ class ProductLine(models.Model):
         related_name="product_line_attribute_value",
     )
 
-    objects = ActiveQueryset.as_manager()
+    objects = IsActiveQueryset.as_manager()
 
     def clean(self):
         # this is gonna checked for every line
