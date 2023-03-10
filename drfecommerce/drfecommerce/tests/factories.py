@@ -1,6 +1,6 @@
 import factory
 
-from drfecommerce.product.models import Category, Brand, Product, ProductLine, ProductImage
+from drfecommerce.product.models import Category, Brand, Product, ProductLine, ProductImage, ProductType
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):
@@ -20,6 +20,12 @@ class BrandFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "Brand_%d" % n)
 
 
+class ProductTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProductType
+
+    name = "test_type"
+
 class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Product
@@ -31,6 +37,7 @@ class ProductFactory(factory.django.DjangoModelFactory):
     brand = factory.SubFactory(BrandFactory)
     category = factory.SubFactory(CategoryFactory)
     is_active = True
+    product_type = factory.SubFactory(ProductTypeFactory)
 
 
 class ProductLineFactory(factory.django.DjangoModelFactory):
@@ -51,3 +58,4 @@ class ProductImageFactory(factory.django.DjangoModelFactory):
     alternative_text = "test alternative text"
     url = "test.jpg"
     productline = factory.SubFactory(ProductLineFactory)
+
