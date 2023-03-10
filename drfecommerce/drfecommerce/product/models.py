@@ -104,6 +104,26 @@ class ProductLineAttributeValue(models.Model):
         unique_together = ("attribute_value", "product_line", )
 
 
+    def clean(self):
+        qs = (
+            ProductLineAttributeValue.objects.filter(
+                attribute_value=self.attribute_value)
+            .filter(product_line=self.product_line)
+            .exists()
+        )
+
+        if not qs:
+            # grab all the attributes that is associated with the particular product line
+            iqs = Attribute.objects.filter(attribute_value__product_line_attribute_value=self.product_line).values_list("pk", flat=True) # we use __ to traverse to the next table
+
+            if self.attribute_value.attribute.id in list(iqs):
+                raise ValidationError("Duplicate attributes exists")
+
+    def save(self, *args, **kwargs):
+        # on save now we are running full_clean, meaning clean method
+        self.full_clean()
+        return super(ProductLine, self).save(*args, **kwargs)
+
 
 class ProductLine(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=5)
