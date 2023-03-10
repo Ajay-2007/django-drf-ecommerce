@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Brand, Category, Product, ProductImage, ProductLine, Attribute, AttributeValue
+from .models import Brand, Category, Product, ProductImage, ProductLine, Attribute, AttributeValue, ProductType
 
 
 # all the data will be serialized and returned to the frontend
