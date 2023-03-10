@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from .models import Brand, Category, Product, ProductLine, ProductImage
+from .models import Brand, Category, Product, ProductLine, ProductImage, AttributeValue, Attribute, ProductType
 
 
 # class ProductLineInline(admin.TabularInline):
@@ -47,12 +47,34 @@ class ProductAdmin(admin.ModelAdmin):
         ProductLineInline,
     ]
 
+
+class AttributeValueInline(admin.TabularInline):
+    model = AttributeValue.product_line_attribute_value.through # in order to get through this table we have to specify it to get through that related_name attribute value table
+
+
 class ProductLineAdmin(admin.ModelAdmin):
     inlines = [
         ProductImageInline,
+        AttributeValueInline,
     ]
+
+
+
+class AttributeInline(admin.TabularInline):
+    model = Attribute.product_type_attribute.through
+
+
+class ProductTypeAdmin(admin.ModelAdmin):
+    inlines = [
+        AttributeInline,
+    ]
+
 
 admin.site.register(ProductLine, ProductLineAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category)
 admin.site.register(Brand)
+admin.site.register(Attribute)
+# admin.site.register(ProductType)
+admin.site.register(ProductType, ProductTypeAdmin)
+admin.site.register(AttributeValue)

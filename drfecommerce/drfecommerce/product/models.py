@@ -56,7 +56,7 @@ class Product(models.Model):
     category = TreeForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
 
     is_active = models.BooleanField(default=False)
-
+    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
     # objects = models.Manager() # return all product
     # isactive = ActiveManager() # only return is_active=True product
 
@@ -66,6 +66,63 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+
+class Attribute(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+class AttributeValue(models.Model):
+    attribute_value = models.CharField(max_length=100)
+    attribute = models.ForeignKey(
+        Attribute,
+        on_delete=models.CASCADE,
+        related_name="attribute_value"
+    )
+
+    def __str__(self):
+        return f"{self.attribute.name}-{self.attribute_value}"
+
+
+
+class ProductLineAttributeValue(models.Model):
+    attribute_value = models.ForeignKey(
+        AttributeValue,
+        on_delete=models.CASCADE,
+        related_name="product_attribute_value_av" # we don't want to have same related name twice
+    )
+    product_line = models.ForeignKey(
+        'ProductLine', # we can reference it before the the class definition
+        on_delete=models.CASCADE,
+        related_name="product_attribute_value_pl"
+    )
+
+
+    class Meta:
+        unique_together = ("attribute_value", "product_line", )
+
+
+    def clean(self):
+        qs = (
+            ProductLineAttributeValue.objects.filter(
+                attribute_value=self.attribute_value)
+            .filter(product_line=self.product_line)
+            .exists()
+        )
+
+        if not qs:
+            # grab all the attributes that is associated with the particular product line
+            iqs = Attribute.objects.filter(attribute_value__product_line_attribute_value=self.product_line).values_list("pk", flat=True) # we use __ to traverse to the next table
+
+            if self.attribute_value.attribute.id in list(iqs):
+                raise ValidationError("Duplicate attributes exists")
+
+    def save(self, *args, **kwargs):
+        # on save now we are running full_clean, meaning clean method
+        self.full_clean()
+        return super(ProductLineAttributeValue, self).save(*args, **kwargs)
 
 
 class ProductLine(models.Model):
@@ -80,6 +137,13 @@ class ProductLine(models.Model):
     is_active = models.BooleanField(default=False)
     order = OrderField(unique_for_field="product", blank=True) # we want to run our query on the product field only
     # ordering number will only be related to a product
+
+    attribute_value = models.ManyToManyField(
+        AttributeValue,
+        through="ProductLineAttributeValue",
+        related_name="product_line_attribute_value",
+    )
+
     objects = ActiveQueryset.as_manager()
 
     def clean(self):
@@ -96,6 +160,7 @@ class ProductLine(models.Model):
 
     def __str__(self):
         return str(self.sku)
+
 
 
 class ProductImage(models.Model):
@@ -123,3 +188,38 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return str(self.order)
+
+
+class ProductType(models.Model):
+
+    name = models.CharField(max_length=100)
+
+    attribute = models.ManyToManyField(
+        Attribute,
+        through="ProductTypeAttribute",
+        related_name="product_type_attribute",
+    )
+
+    def __str__(self):
+        return str(self.name)
+
+
+class ProductTypeAttribute(models.Model):
+
+
+    product_type = models.ForeignKey(
+        ProductType,
+        on_delete=models.CASCADE,
+        related_name="product_type_attribute_pt" # we don't want to have same related name twice
+    )
+
+    attribute = models.ForeignKey(
+        Attribute, # we can reference it before the the class definition
+        on_delete=models.CASCADE,
+        related_name="product_type_attribute_a"
+    )
+
+
+    class Meta:
+        unique_together = ("product_type", "attribute", ) # unique_together prevents adding duplicate entries in the database
+
