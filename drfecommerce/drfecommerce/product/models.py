@@ -36,20 +36,21 @@ class Category(MPTTModel):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=235)
     slug = models.SlugField(max_length=255) # slug is a mandatory field
+    pid = models.CharField(max_length=10, unique=True)
     description = models.TextField(blank=True)
     is_digital = models.BooleanField(default=False)
     # the product not necessary depend on the category so on_delete, would be SET_NULL
     category = TreeForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
+    # product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
 
     is_active = models.BooleanField(default=False)
-    product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
-    # objects = models.Manager() # return all product
-    # isactive = ActiveManager() # only return is_active=True product
-
-    # objects = ActiveManager()
     objects = IsActiveQueryset.as_manager()
+    created_at = models.DateTimeField(
+        auto_now_add=True, # save the time and date when the product was added
+        editable=False,
+    )
 
     def __str__(self):
         return self.name
