@@ -3,7 +3,8 @@ import factory
 from drfecommerce.product.models import (
     Category,
     Product,
-    # ProductLine, ProductImage, ProductType, Attribute, AttributeValue
+    ProductLine,
+    # ProductImage, ProductType, Attribute, AttributeValue
 )
 
 
@@ -29,6 +30,25 @@ class ProductFactory(factory.django.DjangoModelFactory):
     category = factory.SubFactory(CategoryFactory)
     is_active = True
     # product_type = factory.SubFactory(ProductTypeFactory)
+
+
+class ProductLineFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProductLine
+
+    price = 10.00
+    sku = "12345"
+    stock_qty = 1
+    product = factory.SubFactory(ProductFactory)
+    is_active = True
+    weight = 100
+
+    # @factory.post_generation
+    # def attribute_value(self, create, extracted, **kwargs):
+    #     if not create or not extracted:
+    #         return
+    #     self.attribute_value.add(*extracted)
+
 
 # class AttributeFactory(factory.django.DjangoModelFactory):
 #     class Meta:
@@ -58,22 +78,6 @@ class ProductFactory(factory.django.DjangoModelFactory):
 
 #     attribute_value = "attr_test"
 #     attribute = factory.SubFactory(AttributeFactory)
-
-# class ProductLineFactory(factory.django.DjangoModelFactory):
-#     class Meta:
-#         model = ProductLine
-
-#     price = 10.00
-#     sku = "12345"
-#     stock_qty = 1
-#     product = factory.SubFactory(ProductFactory)
-#     is_active = True
-
-#     @factory.post_generation
-#     def attribute_value(self, create, extracted, **kwargs):
-#         if not create or not extracted:
-#             return
-#         self.attribute_value.add(*extracted)
 
 
 # class ProductImageFactory(factory.django.DjangoModelFactory):

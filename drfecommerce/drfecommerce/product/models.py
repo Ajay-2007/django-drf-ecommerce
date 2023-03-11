@@ -114,7 +114,7 @@ class ProductLineAttributeValue(models.Model):
 
 class ProductLine(models.Model):
     price = models.DecimalField(decimal_places=2, max_digits=5)
-    sku = models.CharField(max_length=100)
+    sku = models.CharField(max_length=10)
     stock_qty = models.IntegerField()
     product = models.ForeignKey(
         Product,
