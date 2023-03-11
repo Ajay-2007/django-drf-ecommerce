@@ -222,8 +222,8 @@ class TestAttributeModel:
         with pytest.raises(ValidationError):
             obj.full_clean()
 
-# class TestAttributeValueModel:
-#     def test_str_method(self, attribute_value_factory, attribute_factory):
-#         obj_a = attribute_factory(name="test_attribute")
-#         obj_b = attribute_value_factory(attribute_value="test_value", attribute=obj_a)
-#         assert obj_b.__str__() == "test_attribute-test_value"
+class TestAttributeValueModel:
+    def test_str_method(self, attribute_value_factory, attribute_factory):
+        obj_a = attribute_factory(name="test_attribute")
+        obj_b = attribute_value_factory(attribute_value="test_value", attribute=obj_a)
+        assert obj_b.__str__() == "test_attribute-test_value"

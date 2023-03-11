@@ -49,6 +49,13 @@ class Product(models.Model):
         auto_now_add=True, # save the time and date when the product was added
         editable=False,
     )
+
+    attribute_value = models.ManyToManyField(
+        "AttributeValue",
+        through="ProductAttributeValue",
+        related_name="product_attr_value",
+    )
+
     objects = IsActiveQueryset.as_manager()
     def __str__(self):
         return self.name
@@ -72,6 +79,43 @@ class AttributeValue(models.Model):
     def __str__(self):
         return f"{self.attribute.name}-{self.attribute_value}"
 
+
+class ProductAttributeValue(models.Model):
+    attribute_value = models.ForeignKey(
+        AttributeValue,
+        on_delete=models.CASCADE,
+        related_name="product_value_av" # we don't want to have same related name twice
+    )
+    product = models.ForeignKey(
+        'Product', # we can reference it before the the class definition
+        on_delete=models.CASCADE,
+        related_name="product_value_pl"
+    )
+
+
+    class Meta:
+        unique_together = ("attribute_value", "product", )
+
+
+    def clean(self):
+        qs = (
+            ProductAttributeValue.objects.filter(
+                attribute_value=self.attribute_value)
+            .filter(product=self.product)
+            .exists()
+        )
+
+        if not qs:
+            # grab all the attributes that is associated with the particular product line
+            iqs = Attribute.objects.filter(attribute_value__product_line_attribute_value=self.product).values_list("pk", flat=True) # we use __ to traverse to the next table
+
+            if self.attribute_value.attribute.id in list(iqs):
+                raise ValidationError("Duplicate attributes exists")
+
+    def save(self, *args, **kwargs):
+        # on save now we are running full_clean, meaning clean method
+        self.full_clean()
+        return super(ProductLineAttributeValue, self).save(*args, **kwargs)
 
 
 class ProductLineAttributeValue(models.Model):
@@ -126,11 +170,11 @@ class ProductLine(models.Model):
     # ordering number will only be related to a product
     weight = models.FloatField()
 
-    # attribute_value = models.ManyToManyField(
-    #     AttributeValue,
-    #     through="ProductLineAttributeValue",
-    #     related_name="product_line_attribute_value",
-    # )
+    attribute_value = models.ManyToManyField(
+        AttributeValue,
+        through="ProductLineAttributeValue",
+        related_name="product_line_attribute_value",
+    )
     product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT, related_name="product_line_type")
     created_at = models.DateTimeField(
         auto_now_add=True,
