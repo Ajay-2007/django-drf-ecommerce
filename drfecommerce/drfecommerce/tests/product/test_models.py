@@ -211,10 +211,16 @@ class TestProductTypeModel:
         with pytest.raises(ValidationError):
             obj.full_clean()
 
-# class TestAttributeModel:
-#     def test_str_method(self, attribute_factory):
-#         obj = attribute_factory(name="test_attribute")
-#         assert obj.__str__() == "test_attribute"
+class TestAttributeModel:
+    def test_str_method(self, attribute_factory):
+        obj = attribute_factory(name="test_attribute")
+        assert obj.__str__() == "test_attribute"
+
+    def test_name_field_max_length(self, attribute_factory):
+        name = "x" * 101
+        obj = attribute_factory(name=name)
+        with pytest.raises(ValidationError):
+            obj.full_clean()
 
 # class TestAttributeValueModel:
 #     def test_str_method(self, attribute_value_factory, attribute_factory):

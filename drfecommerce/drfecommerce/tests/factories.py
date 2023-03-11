@@ -6,7 +6,8 @@ from drfecommerce.product.models import (
     ProductLine,
     ProductImage,
     ProductType,
-    # Attribute, AttributeValue
+    Attribute,
+    # AttributeValue
 )
 
 
@@ -25,6 +26,11 @@ class ProductTypeFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: "test_type_name_%d" % n)
 
+    @factory.post_generation
+    def attribute(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        self.attribute.add(*extracted)
 
 class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -73,13 +79,12 @@ class ProductImageFactory(factory.django.DjangoModelFactory):
     #         return
     #     self.attribute.add(*extracted)
 
-# class AttributeFactory(factory.django.DjangoModelFactory):
-#     class Meta:
-#         model = Attribute
+class AttributeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Attribute
 
-#     name = "attribute_name_test"
-#     description = "attr_description_test"
-
+    name = "attribute_name_test"
+    description = "attr_description_test"
 
 
 

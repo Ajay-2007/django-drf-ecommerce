@@ -9,8 +9,9 @@ from .factories import (
     ProductFactory,
     ProductLineFactory,
     ProductImageFactory,
-    ProductTypeFactory
-    # AttributeFactory, AttributeValueFactory,
+    ProductTypeFactory,
+    AttributeFactory,
+    # AttributeValueFactory,
 )
 
 register(CategoryFactory)
@@ -18,7 +19,7 @@ register(ProductFactory)
 register(ProductLineFactory) # to access ProductLineFactory we have to call product_line_factory
 register(ProductImageFactory)
 register(ProductTypeFactory)
-# register(AttributeFactory)
+register(AttributeFactory)
 # register(AttributeValueFactory)
 
 
