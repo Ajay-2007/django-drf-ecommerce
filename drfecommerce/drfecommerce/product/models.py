@@ -41,8 +41,7 @@ class Product(models.Model):
     pid = models.CharField(max_length=10, unique=True)
     description = models.TextField(blank=True)
     is_digital = models.BooleanField(default=False)
-    # the product not necessary depend on the category so on_delete, would be SET_NULL
-    category = TreeForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
+    category = TreeForeignKey('Category', null=True, blank=True, on_delete=models.PROTECT)
     # product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
 
     is_active = models.BooleanField(default=False)
@@ -119,17 +118,22 @@ class ProductLine(models.Model):
     stock_qty = models.IntegerField()
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="product_line" # we can specify the name that can make things little bit readable, we will use this data to reference this data to build the reverse foreign key relationship
     )
     is_active = models.BooleanField(default=False)
     order = OrderField(unique_for_field="product", blank=True) # we want to run our query on the product field only
     # ordering number will only be related to a product
+    weight = models.FloatField()
 
-    attribute_value = models.ManyToManyField(
-        AttributeValue,
-        through="ProductLineAttributeValue",
-        related_name="product_line_attribute_value",
+    # attribute_value = models.ManyToManyField(
+    #     AttributeValue,
+    #     through="ProductLineAttributeValue",
+    #     related_name="product_line_attribute_value",
+    # )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
     )
 
     objects = IsActiveQueryset.as_manager()
