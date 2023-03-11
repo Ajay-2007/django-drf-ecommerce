@@ -11,7 +11,8 @@ from .factories import (
     ProductImageFactory,
     ProductTypeFactory,
     AttributeFactory,
-    # AttributeValueFactory,
+    AttributeValueFactory,
+    ProductLineAttributeValueFactory
 )
 
 register(CategoryFactory)
@@ -20,7 +21,8 @@ register(ProductLineFactory) # to access ProductLineFactory we have to call prod
 register(ProductImageFactory)
 register(ProductTypeFactory)
 register(AttributeFactory)
-# register(AttributeValueFactory)
+register(AttributeValueFactory)
+register(ProductLineAttributeValueFactory)
 
 
 # pytest fixtures

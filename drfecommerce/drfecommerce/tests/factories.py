@@ -7,7 +7,8 @@ from drfecommerce.product.models import (
     ProductImage,
     ProductType,
     Attribute,
-    # AttributeValue
+    AttributeValue,
+    ProductLineAttributeValue
 )
 
 
@@ -46,6 +47,12 @@ class ProductFactory(factory.django.DjangoModelFactory):
     product_type = factory.SubFactory(ProductTypeFactory)
 
 
+    @factory.post_generation
+    def attribute_value(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        self.attribute_value.add(*extracted)
+
 class ProductLineFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProductLine
@@ -57,11 +64,13 @@ class ProductLineFactory(factory.django.DjangoModelFactory):
     is_active = True
     weight = 100
     product_type = factory.SubFactory(ProductTypeFactory)
-    # @factory.post_generation
-    # def attribute_value(self, create, extracted, **kwargs):
-    #     if not create or not extracted:
-    #         return
-    #     self.attribute_value.add(*extracted)
+
+
+    @factory.post_generation
+    def attribute_value(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        self.attribute_value.add(*extracted)
 
 class ProductImageFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -72,12 +81,11 @@ class ProductImageFactory(factory.django.DjangoModelFactory):
     product_line = factory.SubFactory(ProductLineFactory)
 
 
-
-    # @factory.post_generation
-    # def attribute(self, create, extracted, **kwargs):
-    #     if not create or not extracted:
-    #         return
-    #     self.attribute.add(*extracted)
+    @factory.post_generation
+    def attribute_value(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        self.attribute_value.add(*extracted)
 
 class AttributeFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -89,11 +97,18 @@ class AttributeFactory(factory.django.DjangoModelFactory):
 
 
 
-# class AttributeValueFactory(factory.django.DjangoModelFactory):
-#     class Meta:
-#         model = AttributeValue
+class AttributeValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AttributeValue
 
-#     attribute_value = "attr_test"
-#     attribute = factory.SubFactory(AttributeFactory)
+    attribute_value = "attr_test"
+    attribute = factory.SubFactory(AttributeFactory)
 
 
+
+class ProductLineAttributeValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProductLineAttributeValue
+
+    attribute_value = factory.SubFactory(AttributeValueFactory)
+    product_line = factory.SubFactory(ProductLineFactory)
