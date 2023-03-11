@@ -159,16 +159,16 @@ class ProductImage(models.Model):
 
     alternative_text = models.CharField(max_length=100)
     url = models.ImageField(upload_to=None, default="test.jpg")
-    productline = models.ForeignKey(
+    product_line = models.ForeignKey(
         ProductLine, on_delete=models.CASCADE, related_name="product_image"
     )
     # related_name django can use it to built that reverse foreign key relationship in our serializer
-    order = OrderField(unique_for_field="productline", blank=True) # we want to run our query on the product field only
+    order = OrderField(unique_for_field="product_line", blank=True) # we want to run our query on the product field only
 
 
     def clean(self):
         # this is gonna checked for every line
-        qs = ProductImage.objects.filter(productline=self.productline)
+        qs = ProductImage.objects.filter(product_line=self.product_line)
         for obj in qs:
             if self.id != obj.id and self.order == obj.order: # means there is duplicate
                 raise ValidationError("Duplicate value.")
@@ -179,7 +179,7 @@ class ProductImage(models.Model):
         return super(ProductImage, self).save(*args, **kwargs)
 
     def __str__(self, *args, **kwargs):
-        return f"{self.productline.sku}_img"
+        return f"{self.product_line.sku}_img"
 
 
 class ProductType(models.Model):

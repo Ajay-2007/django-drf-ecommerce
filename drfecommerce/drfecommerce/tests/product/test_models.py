@@ -167,13 +167,24 @@ class TestProductLineModel:
         qs = ProductLine.objects.count()
         assert qs == 2
 
-# class TestProductImageModel:
+class TestProductImageModel:
 
 
-#     def test_str_method(self, product_image_factory):
-#         obj = product_image_factory(order=1)
-#         assert obj.__str__() == "1"
+    def test_str_method(self, product_image_factory, product_line_factory):
+        obj1 = product_line_factory(sku="12345")
+        obj2 = product_image_factory(order=1, product_line=obj1)
+        assert obj2.__str__() == "12345_img"
 
+    def test_alternative_text_field_length(self, product_image_factory):
+        alternative_text = "x" * 101
+        with pytest.raises(ValidationError):
+            product_image_factory(alternative_text=alternative_text)
+
+    def test_duplicate_order_values(self, product_image_factory, product_line_factory):
+        obj = product_line_factory()
+        product_image_factory(order=1, product_line=obj)
+        with pytest.raises(ValidationError):
+            product_image_factory(order=1, product_line=obj).clean()
 
 # class TestProductTypeModel:
 #     def test_str_method(self, product_type_factory, attribute_factory):
