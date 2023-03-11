@@ -15,7 +15,7 @@ from .fields import OrderField
 #         return self.get_queryset().filter(is_active=True)
 
 
-class IsIsActiveQueryset(models.QuerySet):
+class IsActiveQueryset(models.QuerySet):
     def is_active(self):
         return self.filter(is_active=True)
 
