@@ -178,8 +178,8 @@ class ProductImage(models.Model):
         self.full_clean()
         return super(ProductImage, self).save(*args, **kwargs)
 
-    def __str__(self):
-        return str(self.order)
+    def __str__(self, *args, **kwargs):
+        return f"{self.productline.sku}_img"
 
 
 class ProductType(models.Model):
