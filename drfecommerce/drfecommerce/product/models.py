@@ -35,23 +35,11 @@ class Category(MPTTModel):
         return self.name
 
 
-class Brand(models.Model):
-    # brand needs to be unique
-    name = models.CharField(max_length=100, unique=True)
-    is_active = models.BooleanField(default=False)
-    objects = IsActiveQueryset.as_manager()
-
-    def __str__(self):
-        return self.name
-
-
-
 class Product(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=255) # slug is a mandatory field
     description = models.TextField(blank=True)
     is_digital = models.BooleanField(default=False)
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     # the product not necessary depend on the category so on_delete, would be SET_NULL
     category = TreeForeignKey('Category', null=True, blank=True, on_delete=models.SET_NULL)
 

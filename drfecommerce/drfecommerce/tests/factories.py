@@ -17,14 +17,6 @@ class CategoryFactory(factory.django.DjangoModelFactory):
 
 
 
-# class BrandFactory(factory.django.DjangoModelFactory):
-#     class Meta:
-#         model = Brand
-
-#     # name = "test_brand"
-#     name = factory.Sequence(lambda n: "Brand_%d" % n)
-
-
 # class AttributeFactory(factory.django.DjangoModelFactory):
 #     class Meta:
 #         model = Attribute
@@ -54,7 +46,6 @@ class CategoryFactory(factory.django.DjangoModelFactory):
 #     name = "test_product"
 #     description = "test_description"
 #     is_digital = True
-#     brand = factory.SubFactory(BrandFactory)
 #     category = factory.SubFactory(CategoryFactory)
 #     is_active = True
 #     product_type = factory.SubFactory(ProductTypeFactory)

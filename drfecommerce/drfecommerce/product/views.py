@@ -14,8 +14,8 @@ from django.db.models import Prefetch
 
 
 
-from .models import Category, Brand, Product
-from .serializers import CategorySerializer, BrandSerializer, ProductSerializer
+from .models import Category, Product
+from .serializers import CategorySerializer, ProductSerializer
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -31,20 +31,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class BrandViewSet(viewsets.ViewSet):
-    """
-
-    A Simple Viewset for viewing all brands
-    """
-
-    queryset = Brand.objects.all()
-
-
-    @extend_schema(responses=BrandSerializer)
-    def list(self, request):
-        serializer = BrandSerializer(self.queryset, many=True)
-        return Response(serializer.data)
-
 
 class ProductViewSet(viewsets.ViewSet):
     """
@@ -55,7 +41,7 @@ class ProductViewSet(viewsets.ViewSet):
     # queryset = Product.objects.all()
     # queryset = Product.isactive.all()
     # queryset = Product.objects.isactive() # isactive is now a method which can be accessed through the manager
-    queryset = Product.objects.all().isactive() # isactive is now a method which can be accessed through the queryset manager
+    queryset = Product.objects.all().is_active() # isactive is now a method which can be accessed through the queryset manager
 
 
 
@@ -64,10 +50,8 @@ class ProductViewSet(viewsets.ViewSet):
     def retrieve(self, request, slug=None): # this is the function we are using when we return individual products
         # serializer = ProductSerializer(self.queryset.filter(slug=slug), many=True) # setup the query and run our filter
         serializer = ProductSerializer(
-            # self.queryset.filter(slug=slug).select_related("category", "brand"), many=True
-            # Product.objects.filter(slug=slug).select_related("category", "brand"), many=True,
             Product.objects.filter(slug=slug)
-            .select_related("category", "brand")
+            .select_related("category", )
             # .prefetch_related(Prefetch("product_line"))
             .prefetch_related(Prefetch("product_line__product_image")) # to do reverse foreign key look up we have to do double underscore, it will fetch all of the product_image at once
             .prefetch_related(Prefetch("product_line__attribute_value__attribute"))
@@ -87,7 +71,6 @@ class ProductViewSet(viewsets.ViewSet):
                 "product_product"."slug",
                 "product_product"."description",
                 "product_product"."is_digital",
-                "product_product"."brand_id",
                 "product_product"."category_id",
                 "product_product"."is_active"
             FROM "product_product"

@@ -69,16 +69,6 @@ class TestCategoryModel:
         qs = Category.objects.count()
         assert qs == 2
 
-# class TestBrandModel:
-
-#     def test_str_method(self, brand_factory):
-#         # Arrange
-#         # Act
-#         x = brand_factory(name="test_brand")
-
-
-#         # Assert
-#         assert x.__str__() == "test_brand"
 
 # class TestProductModel:
 
