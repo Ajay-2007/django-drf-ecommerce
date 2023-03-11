@@ -1,6 +1,15 @@
 import factory
 
-from drfecommerce.product.models import Category, Brand, Product, ProductLine, ProductImage, ProductType, Attribute, AttributeValue
+from drfecommerce.product.models import (
+    Category,
+    Product,
+    ProductLine,
+    ProductImage,
+    ProductType,
+    Attribute,
+    AttributeValue,
+    ProductLineAttributeValue
+)
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):
@@ -8,30 +17,15 @@ class CategoryFactory(factory.django.DjangoModelFactory):
         model = Category
 
     # name = "test_category"
-    name = factory.Sequence(lambda n: "Category_%d" % n)
-
-
-
-class BrandFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Brand
-
-    # name = "test_brand"
-    name = factory.Sequence(lambda n: "Brand_%d" % n)
-
-
-class AttributeFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Attribute
-
-    name = "attribute_name_test"
-    description = "attr_description_test"
+    # everytime we create a new category we are going to automatically create a new name for slug and name for the category
+    name = factory.Sequence(lambda n: "test_category_%d" % n)
+    slug = factory.Sequence(lambda n: "test_slug_%d" %n)
 
 class ProductTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProductType
 
-    name = "test_type"
+    name = factory.Sequence(lambda n: "test_type_name_%d" % n)
 
     @factory.post_generation
     def attribute(self, create, extracted, **kwargs):
@@ -39,27 +33,25 @@ class ProductTypeFactory(factory.django.DjangoModelFactory):
             return
         self.attribute.add(*extracted)
 
-
-
 class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Product
 
     # should you have two products that needs the same name
-    name = "test_product"
+    name = factory.Sequence(lambda n: "test_product_name_%d" % n)
+    pid = factory.Sequence(lambda n: "0000_%d" % n)
     description = "test_description"
-    is_digital = True
-    brand = factory.SubFactory(BrandFactory)
+    is_digital = False
     category = factory.SubFactory(CategoryFactory)
     is_active = True
     product_type = factory.SubFactory(ProductTypeFactory)
 
-class AttributeValueFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = AttributeValue
 
-    attribute_value = "attr_test"
-    attribute = factory.SubFactory(AttributeFactory)
+    @factory.post_generation
+    def attribute_value(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        self.attribute_value.add(*extracted)
 
 class ProductLineFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -70,6 +62,9 @@ class ProductLineFactory(factory.django.DjangoModelFactory):
     stock_qty = 1
     product = factory.SubFactory(ProductFactory)
     is_active = True
+    weight = 100
+    product_type = factory.SubFactory(ProductTypeFactory)
+
 
     @factory.post_generation
     def attribute_value(self, create, extracted, **kwargs):
@@ -77,12 +72,43 @@ class ProductLineFactory(factory.django.DjangoModelFactory):
             return
         self.attribute_value.add(*extracted)
 
-
 class ProductImageFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProductImage
 
     alternative_text = "test alternative text"
     url = "test.jpg"
-    productline = factory.SubFactory(ProductLineFactory)
+    product_line = factory.SubFactory(ProductLineFactory)
 
+
+    @factory.post_generation
+    def attribute_value(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        self.attribute_value.add(*extracted)
+
+class AttributeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Attribute
+
+    name = "attribute_name_test"
+    description = "attr_description_test"
+
+
+
+
+class AttributeValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AttributeValue
+
+    attribute_value = "attr_test"
+    attribute = factory.SubFactory(AttributeFactory)
+
+
+
+class ProductLineAttributeValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProductLineAttributeValue
+
+    attribute_value = factory.SubFactory(AttributeValueFactory)
+    product_line = factory.SubFactory(ProductLineFactory)
