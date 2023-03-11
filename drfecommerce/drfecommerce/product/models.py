@@ -46,12 +46,11 @@ class Product(models.Model):
     # product_type = models.ForeignKey("ProductType", on_delete=models.PROTECT)
 
     is_active = models.BooleanField(default=False)
-    objects = IsActiveQueryset.as_manager()
     created_at = models.DateTimeField(
         auto_now_add=True, # save the time and date when the product was added
         editable=False,
     )
-
+    objects = IsActiveQueryset.as_manager()
     def __str__(self):
         return self.name
 
