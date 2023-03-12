@@ -53,8 +53,9 @@ class ProductViewSet(viewsets.ViewSet):
             self.queryset.filter(slug=slug)
             # .select_related("category")
             # .prefetch_related(Prefetch("product_line"))
-            # .prefetch_related(Prefetch("product_line__product_image")) # to do reverse foreign key look up we have to do double underscore, it will fetch all of the product_image at once
-            # .prefetch_related(Prefetch("product_line__attribute_value__attribute"))
+            .prefetch_related(Prefetch("attribute_value__attribute"))
+            .prefetch_related(Prefetch("product_line__product_image")) # to do reverse foreign key look up we have to do double underscore, it will fetch all of the product_image at once
+            .prefetch_related(Prefetch("product_line__attribute_value__attribute"))
             , many=True,
         ) # setup the query and run our filter, performing left outer join
         # we just trying to find the data related to our product in the category table
@@ -81,9 +82,9 @@ class ProductViewSet(viewsets.ViewSet):
         data = Response(serializer.data)
         q = list(connection.queries)
         print(len(q))
-        for qs in q:
-            sqlformatted = format(str(qs["sql"]), reindent=True)
-            print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
+        # for qs in q:
+        #     sqlformatted = format(str(qs["sql"]), reindent=True)
+        #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
 
 
         return data
