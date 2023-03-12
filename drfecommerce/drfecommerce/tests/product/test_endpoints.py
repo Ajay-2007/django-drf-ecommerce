@@ -1,26 +1,28 @@
-# import factory
-# import pytest
-# import json
+import factory
+import pytest
+import json
 
-# pytestmark = pytest.mark.django_db
+from drfecommerce.product.models import Category
 
-
-# class TestCategoryEndpoints:
-
-#     endpoint = "/api/category/"
+pytestmark = pytest.mark.django_db
 
 
-#     def test_category_get(self, category_factory, api_client):
-#         # Arrange
-#         # x = category_factory(name="test_cat")
-#         # create 4 new record in our test database
-#         category_factory.create_batch(4)
-#         # Act
-#         response = api_client().get(self.endpoint)
-#         # Assert
-#         assert response.status_code == 200
-#         # print(json.loads(response.content))
-#         assert len(json.loads(response.content)) == 4
+class TestCategoryEndpoints:
+
+    endpoint = "/api/category/"
+
+
+    def test_category_get(self, category_factory, api_client):
+        # Arrange
+        # x = category_factory(name="test_cat")
+        # create 4 new record in our test database
+        category_factory.create_batch(4, is_active=True)
+        # Act
+        response = api_client().get(self.endpoint)
+        # Assert
+        assert response.status_code == 200
+        # print(json.loads(response.content))
+        assert len(json.loads(response.content)) == 4
 
 
 

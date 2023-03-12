@@ -5,13 +5,14 @@ from .models import Category, Product, ProductImage, ProductLine, Attribute, Att
 
 # all the data will be serialized and returned to the frontend
 class CategorySerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source="name") # getting the name from category model
+    category = serializers.CharField(source="name") # getting the name from category model
+    # slug = serializers.SlugField("slug")
 
     class Meta:
         model = Category
         # fields = "__all__" # what data we return to the client
         # fields = ["name"]
-        fields = ["category_name"] # it will just return the category_name in the json response
+        fields = ["category", "slug"] # it will just return the category_name and slug in the json response
 
 
 
