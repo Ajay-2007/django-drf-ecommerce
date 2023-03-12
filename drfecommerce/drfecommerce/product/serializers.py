@@ -73,7 +73,7 @@ class AttributeValueSerializer(serializers.ModelSerializer):
 # move it front of the ProductSerializer in order to use it in ProductSerializer
 class ProductLineSerializer(serializers.ModelSerializer):
     # product = ProductSerializer()
-    # product_image = ProductImageSerializer(many=True) # multiple images
+    product_image = ProductImageSerializer(many=True) # multiple images
     attribute_value = AttributeValueSerializer(many=True) # we have many attributes return
 
 
@@ -95,7 +95,7 @@ class ProductLineSerializer(serializers.ModelSerializer):
         av_data = data.pop("attribute_value")
         attr_values = {}
         for key in av_data:
-            attr_values.update({key["attribute"]["id"] : key["attribute_value"]})
+            attr_values.update({key["attribute"]["name"] : key["attribute_value"]})
         data.update({"specification": attr_values})
         return data
 
@@ -103,9 +103,10 @@ class ProductLineSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     # category = CategorySerializer()
-    category_name = serializers.CharField(source='category.name') # we are able to do this because there is category field within the Product table
+    # category_name = serializers.CharField(source='category.name') # we are able to do this because there is category field within the Product table
     product_line = ProductLineSerializer(many=True)
-    attribute = serializers.SerializerMethodField()
+    attribute_value = AttributeValueSerializer(many=True)
+    # attribute = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -114,10 +115,11 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = (
             "name",
             "slug",
+            "pid",
             "description",
-            "category_name",
+            # "category_name",
             "product_line",
-            "attribute"
+            "attribute_value"
         ) # specify what we want to include, in order
 
 
@@ -127,10 +129,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        av_data = data.pop("attribute")
+        av_data = data.pop("attribute_value")
         attr_values = {}
         for key in av_data:
-            attr_values.update({key["id"] : key["name"]})
-        data.update({"type specification": attr_values})
+            attr_values.update({key["attribute"]["name"] : key["attribute_value"]})
+        data.update({"attribute": attr_values})
         return data
 
