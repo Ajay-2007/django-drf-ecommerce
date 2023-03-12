@@ -107,7 +107,7 @@ class ProductAttributeValue(models.Model):
 
         if not qs:
             # grab all the attributes that is associated with the particular product line
-            iqs = Attribute.objects.filter(attribute_value__product_line_attribute_value=self.product).values_list("pk", flat=True) # we use __ to traverse to the next table
+            iqs = Attribute.objects.filter(attribute_value__product_attr_value=self.product).values_list("pk", flat=True) # we use __ to traverse to the next table
 
             if self.attribute_value.attribute.id in list(iqs):
                 raise ValidationError("Duplicate attributes exists")
@@ -115,7 +115,7 @@ class ProductAttributeValue(models.Model):
     def save(self, *args, **kwargs):
         # on save now we are running full_clean, meaning clean method
         self.full_clean()
-        return super(ProductLineAttributeValue, self).save(*args, **kwargs)
+        return super(ProductAttributeValue, self).save(*args, **kwargs)
 
 
 class ProductLineAttributeValue(models.Model):
