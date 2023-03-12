@@ -15,11 +15,10 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ["category", "slug"] # it will just return the category_name and slug in the json response
 
 
-
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        exclude = ("id", "productline")
+        exclude = ("id", "product_line")
 
 
 class AttributeSerializer(serializers.ModelSerializer):
@@ -27,6 +26,41 @@ class AttributeSerializer(serializers.ModelSerializer):
         model = Attribute
         fields = ("name", "id",)
 
+
+class ProductLineCategorySerializer(serializers.ModelSerializer):
+    product_image = ProductImageSerializer(many=True)
+
+    class Meta:
+        model = ProductLine
+        fields = (
+            "price",
+            "product_image",
+        )
+
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    product_line = ProductLineCategorySerializer(many=True)
+
+    class Meta:
+        model = Product
+        fields = (
+            "name",
+            "slug",
+            "pid",
+            "created_at",
+            "product_line",
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        x = data.pop("product_line")
+        print(x)
+        price = x[0]["price"]
+        image = x[0]["product_image"]
+        data.update({"price": price})
+        data.update({"image": image})
+
+        return data
 
 class AttributeValueSerializer(serializers.ModelSerializer):
     attribute = AttributeSerializer(many=False)

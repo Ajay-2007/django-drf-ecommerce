@@ -14,8 +14,8 @@ from django.db.models import Prefetch
 
 
 
-from .models import Category, Product
-from .serializers import CategorySerializer, ProductSerializer
+from .models import Category, Product,  ProductLine, ProductImage
+from .serializers import CategorySerializer, ProductSerializer, ProductCategorySerializer
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -105,6 +105,18 @@ class ProductViewSet(viewsets.ViewSet):
         """
         An endpoint to return products by category
         """
-        # query the category name for selecting products
-        serializer = ProductSerializer(self.queryset.filter(category__slug=slug), many=True)
+        serializer = ProductCategorySerializer(
+            self.queryset.filter(category__slug=slug)
+            .prefetch_related(
+                Prefetch("product_line", queryset=ProductLine.objects.order_by("order"))
+            )
+            .prefetch_related(
+                Prefetch(
+                    "product_line__product_image",
+                    queryset=ProductImage.objects.filter(order=1),
+                )
+            ),
+            many=True,
+        )
+
         return Response(serializer.data)
