@@ -5,20 +5,20 @@ from .models import Category, Product, ProductImage, ProductLine, Attribute, Att
 
 # all the data will be serialized and returned to the frontend
 class CategorySerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source="name") # getting the name from category model
+    category = serializers.CharField(source="name") # getting the name from category model
+    # slug = serializers.SlugField("slug")
 
     class Meta:
         model = Category
         # fields = "__all__" # what data we return to the client
         # fields = ["name"]
-        fields = ["category_name"] # it will just return the category_name in the json response
-
+        fields = ["category", "slug"] # it will just return the category_name and slug in the json response
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        exclude = ("id", "productline")
+        exclude = ("id", "product_line")
 
 
 class AttributeSerializer(serializers.ModelSerializer):
@@ -26,6 +26,42 @@ class AttributeSerializer(serializers.ModelSerializer):
         model = Attribute
         fields = ("name", "id",)
 
+
+class ProductLineCategorySerializer(serializers.ModelSerializer):
+    product_image = ProductImageSerializer(many=True)
+
+    class Meta:
+        model = ProductLine
+        fields = (
+            "price",
+            "product_image",
+        )
+
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    product_line = ProductLineCategorySerializer(many=True)
+
+    class Meta:
+        model = Product
+        fields = (
+            "name",
+            "slug",
+            "pid",
+            "created_at",
+            "product_line",
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        x = data.pop("product_line")
+        # print(x)
+        if x:
+            price = x[0]["price"]
+            image = x[0]["product_image"]
+            data.update({"price": price})
+            data.update({"image": image})
+
+        return data
 
 class AttributeValueSerializer(serializers.ModelSerializer):
     attribute = AttributeSerializer(many=False)
@@ -37,7 +73,7 @@ class AttributeValueSerializer(serializers.ModelSerializer):
 # move it front of the ProductSerializer in order to use it in ProductSerializer
 class ProductLineSerializer(serializers.ModelSerializer):
     # product = ProductSerializer()
-    # product_image = ProductImageSerializer(many=True) # multiple images
+    product_image = ProductImageSerializer(many=True) # multiple images
     attribute_value = AttributeValueSerializer(many=True) # we have many attributes return
 
 
@@ -59,7 +95,7 @@ class ProductLineSerializer(serializers.ModelSerializer):
         av_data = data.pop("attribute_value")
         attr_values = {}
         for key in av_data:
-            attr_values.update({key["attribute"]["id"] : key["attribute_value"]})
+            attr_values.update({key["attribute"]["name"] : key["attribute_value"]})
         data.update({"specification": attr_values})
         return data
 
@@ -67,9 +103,10 @@ class ProductLineSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     # category = CategorySerializer()
-    category_name = serializers.CharField(source='category.name') # we are able to do this because there is category field within the Product table
+    # category_name = serializers.CharField(source='category.name') # we are able to do this because there is category field within the Product table
     product_line = ProductLineSerializer(many=True)
-    attribute = serializers.SerializerMethodField()
+    attribute_value = AttributeValueSerializer(many=True)
+    # attribute = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -78,10 +115,11 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = (
             "name",
             "slug",
+            "pid",
             "description",
-            "category_name",
+            # "category_name",
             "product_line",
-            "attribute"
+            "attribute_value"
         ) # specify what we want to include, in order
 
 
@@ -91,10 +129,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        av_data = data.pop("attribute")
+        av_data = data.pop("attribute_value")
         attr_values = {}
         for key in av_data:
-            attr_values.update({key["id"] : key["name"]})
-        data.update({"type specification": attr_values})
+            attr_values.update({key["attribute"]["name"] : key["attribute_value"]})
+        data.update({"attribute": attr_values})
         return data
 

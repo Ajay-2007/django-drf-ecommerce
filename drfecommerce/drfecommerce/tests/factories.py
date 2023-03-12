@@ -21,6 +21,7 @@ class CategoryFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "test_category_%d" % n)
     slug = factory.Sequence(lambda n: "test_slug_%d" %n)
 
+
 class ProductTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProductType

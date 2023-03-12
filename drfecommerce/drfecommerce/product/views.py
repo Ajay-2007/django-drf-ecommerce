@@ -14,8 +14,8 @@ from django.db.models import Prefetch
 
 
 
-from .models import Category, Product
-from .serializers import CategorySerializer, ProductSerializer
+from .models import Category, Product,  ProductLine, ProductImage
+from .serializers import CategorySerializer, ProductSerializer, ProductCategorySerializer
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """
@@ -23,7 +23,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     A Simple Viewset for viewing all categories
     """
 
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().is_active()
 
     @extend_schema(responses=CategorySerializer)
     def list(self, request):
@@ -50,9 +50,10 @@ class ProductViewSet(viewsets.ViewSet):
     def retrieve(self, request, slug=None): # this is the function we are using when we return individual products
         # serializer = ProductSerializer(self.queryset.filter(slug=slug), many=True) # setup the query and run our filter
         serializer = ProductSerializer(
-            Product.objects.filter(slug=slug)
-            .select_related("category", )
+            self.queryset.filter(slug=slug)
+            # .select_related("category")
             # .prefetch_related(Prefetch("product_line"))
+            .prefetch_related(Prefetch("attribute_value__attribute"))
             .prefetch_related(Prefetch("product_line__product_image")) # to do reverse foreign key look up we have to do double underscore, it will fetch all of the product_image at once
             .prefetch_related(Prefetch("product_line__attribute_value__attribute"))
             , many=True,
@@ -79,8 +80,8 @@ class ProductViewSet(viewsets.ViewSet):
         # print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
 
         data = Response(serializer.data)
-        # q = list(connection.queries)
-        # print(len(q))
+        q = list(connection.queries)
+        print(len(q))
         # for qs in q:
         #     sqlformatted = format(str(qs["sql"]), reindent=True)
         #     print(highlight(sqlformatted, SqlLexer(), TerminalFormatter()))
@@ -89,10 +90,6 @@ class ProductViewSet(viewsets.ViewSet):
         return data
 
 
-    @extend_schema(responses=ProductSerializer)
-    def list(self, request):
-        serializer = ProductSerializer(self.queryset, many=True)
-        return Response(serializer.data)
 
 
     @action(
@@ -105,6 +102,18 @@ class ProductViewSet(viewsets.ViewSet):
         """
         An endpoint to return products by category
         """
-        # query the category name for selecting products
-        serializer = ProductSerializer(self.queryset.filter(category__slug=slug), many=True)
+        serializer = ProductCategorySerializer(
+            self.queryset.filter(category__slug=slug)
+            .prefetch_related(
+                Prefetch("product_line", queryset=ProductLine.objects.order_by("order"))
+            )
+            .prefetch_related(
+                Prefetch(
+                    "product_line__product_image",
+                    queryset=ProductImage.objects.filter(order=1),
+                )
+            ),
+            many=True,
+        )
+
         return Response(serializer.data)
