@@ -54,11 +54,12 @@ class ProductCategorySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         x = data.pop("product_line")
-        print(x)
-        price = x[0]["price"]
-        image = x[0]["product_image"]
-        data.update({"price": price})
-        data.update({"image": image})
+        # print(x)
+        if x:
+            price = x[0]["price"]
+            image = x[0]["product_image"]
+            data.update({"price": price})
+            data.update({"image": image})
 
         return data
 
